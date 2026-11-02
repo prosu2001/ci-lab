@@ -49,7 +49,7 @@ jobs:
         
     # 發布編譯成品（單一執行檔、無相依純淨輸出）
     - name: Publish App
-      run: dotnet publish App/App.csproj -c Release -o ./publish-output
+      run: dotnet publish App/App.csproj -c Release -r win-x64 --no-self-contained -o ./publish-output
       
     # 將編譯成品上傳為 GitHub Artifcat 供下載
     - name: Upload Build Artifcat
