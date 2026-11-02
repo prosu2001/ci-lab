@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: CI/CD Pipeline
 # 觸發時機：當有人向 main 分支發起 PR，或是直接 push 到 main
 on:
   pull_request:
@@ -7,6 +7,7 @@ on:
     branches: [ "main" ]
     
 jobs:
+  # 階段一：CI（持續整合 - 驗證品質）
   build-and-test:
     runs-on: ubuntu-latest # 在 GitHub 的虛擬機執行
     
@@ -19,7 +20,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
           
       # 3. 還原依賴套件
       - name: Restore dependancies
@@ -32,3 +33,24 @@ jobs:
       # 5. 跑單元測試（只要有任一個 Assert 失敗，這一步就會爆掉中斷）
       - name: Run Unit Tests
         run: dotnet test --no-build --configuration Release --verbosity normal
+  # 階段二：CD (持續交付 - 自動打包成品)
+  publish-and-package:
+    needs: build-and-test # 必須等 CI 通過才執行
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' # 只有 main 分支合併時才觸發
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        dotnet-version: '10.0.x'
+        
+    # 發布編譯成品（單一執行檔、無相依純淨輸出）
+    - name: Publish App
+      run: dotnet publish App/App.csproj -c Release -o ./publish-output
+      
+    # 將編譯成品上傳為 GitHub Artifcat 供下載
+    - name: Upload Build Artifcat
+      uses: actions/checkout@v4
+      with:
+        name: app-release
+        path: ./publish-output/
