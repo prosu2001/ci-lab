@@ -41,6 +41,9 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '10.0.x'
         
@@ -50,7 +53,7 @@ jobs:
       
     # 將編譯成品上傳為 GitHub Artifcat 供下載
     - name: Upload Build Artifcat
-      uses: actions/checkout@v4
+      uses: actions/upload-artifact@v4
       with:
         name: app-release
         path: ./publish-output/
